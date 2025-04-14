@@ -25,7 +25,7 @@
 
 在下图界面打开main.exe即可(推荐)
 注：本程序需要管理员权限（否则无法在游戏全屏下模拟鼠标点击事件）（win10用户右键选择以管理员身份运行即可，11应该类似）
-![img_1.png](img_1.png)
+![img_1.png](mdimg/img_1.png)
 或者下载源码执行
 <pre>
 pip install -r requirements.txt
@@ -33,6 +33,6 @@ pip install -r requirements.txt
 python main.py
 </pre>
 (注：目前仅支持Windows全屏窗口，暂时不支持云游戏等)
-![img.png](img.png)
+![img.png](mdimg/img.png)
 
 
