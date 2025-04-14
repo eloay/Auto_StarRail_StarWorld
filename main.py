@@ -44,15 +44,15 @@ def pic_match(big_img, template):
 
 
 def screenshot():
-    window = gw.getWindowsWithTitle("崩坏：星穹铁道")[0]  # 替换成你目标窗口的标题
+    window = gw.getWindowsWithTitle("崩坏：星穹铁道")[0]
     if window and window.visible:
         if win32gui.GetWindowText(win32gui.GetForegroundWindow()) != "崩坏：星穹铁道":
-            print("截图失败")
+            print("截图失败....可能是游戏在后台，请手动切换一下...")
             return False
         left, top, width, height = window.left, window.top, window.width, window.height
         return pyautogui.screenshot(region=(left, top, width, height))
     else:
-        print("请打开游戏")
+        print("请打开游戏...")
         return False
 
 
@@ -265,30 +265,38 @@ def get_task(img: Image):
 
 pyautogui.failSafeCheck()
 if __name__ == '__main__':
-    while True:
-        time.sleep(2)
-        # print("任务开始")
-        pic = screenshot()
-        if not pic:
-            continue
-        # print("识别中...")
-        t = get_task(cv2.cvtColor(np.array(pic), cv2.COLOR_RGB2BGR))
-        if t is None:
-            print("未识别到任务...")
-            continue
-        print(f"识别到任务{t.task_num.name}")
-        match t.task_num:
-            case task.task1:
-                do_task.task1(t.pox)
-            case task.task2:
-                do_task.task2()
-            case task.task0:
-                do_task.task0()
-            case task.task4:
-                do_task.task4()
-            case task.task5:
-                do_task.task5()
-            case task.task6:
-                do_task.task6()
-            case task.task3:
-                do_task.task3(t.pox)
+    try:
+        while True:
+            time.sleep(2)
+            # print("任务开始")
+            pic = screenshot()
+            if not pic:
+                continue
+            # print("识别中...")
+            t = get_task(cv2.cvtColor(np.array(pic), cv2.COLOR_RGB2BGR))
+            if t is None:
+                print("未识别到任务...")
+                continue
+            print(f"识别到任务{t.task_num.name}")
+            match t.task_num:
+                case task.task1:
+                    do_task.task1(t.pox)
+                case task.task2:
+                    do_task.task2()
+                case task.task0:
+                    do_task.task0()
+                case task.task4:
+                    do_task.task4()
+                case task.task5:
+                    do_task.task5()
+                case task.task6:
+                    do_task.task6()
+                case task.task3:
+                    do_task.task3(t.pox)
+    except BaseException as e:
+        import traceback
+
+        print(f"发生异常：{e}")
+        with open("error.log", "w") as a:
+            a.write(traceback.format_exc())
+        exit(1)
