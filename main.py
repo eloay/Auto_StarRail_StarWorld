@@ -21,9 +21,10 @@ class pox_result:
 
 
 def get_real_pox(pox: pox_result):
-    dev = 1920, 1080
-    this_dev = pyautogui.size().width, pyautogui.size().height
-    return pox_result(pox.x / dev[0] * this_dev[0], pox.y / dev[1] * this_dev[1], pox.val)
+    return pox
+    # dev = 1920, 1080
+    # this_dev = pyautogui.size().width, pyautogui.size().height
+    # return pox_result(pox.x / dev[0] * this_dev[0], pox.y / dev[1] * this_dev[1], pox.val)
 
 
 def mouse_click(self, x, y):
@@ -265,6 +266,7 @@ def get_task(img: Image):
 
 pyautogui.failSafeCheck()
 if __name__ == '__main__':
+    print(f"当前分辨率{pyautogui.size()}")
     try:
         while True:
             time.sleep(2)
