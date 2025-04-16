@@ -1,13 +1,48 @@
 from dataclasses import dataclass
 from enum import Enum
+from typing import Iterable
 
+import PIL.Image
+import win32gui
 from PIL.Image import Image
 import cv2
 import numpy as np
 import pyautogui
 import time
 import pygetwindow as gw
-import win32gui
+
+debug_mod = False
+
+
+def resize_to_standard(img, standard_width=1920, standard_height=1080):
+    return cv2.resize(img, (standard_width, standard_height), interpolation=cv2.INTER_AREA)
+
+
+def get_this_dev_size():
+    if not hasattr(get_this_dev_size, "_size"):
+        try:
+            window = gw.getWindowsWithTitle("崩坏：星穹铁道")[0]
+            left, top, width, height = window.left, window.top, window.width, window.height
+            img = pyautogui.screenshot(region=(left, top, width, height)).size
+        except IndexError as e:
+            print("请先启动游戏在启动本程序")
+            raise e
+        if img is not False:
+            get_this_dev_size._size = img
+    return getattr(get_this_dev_size, "_size", None)
+
+
+def screenshot():
+    window = gw.getWindowsWithTitle("崩坏：星穹铁道")[0]
+    if window and window.visible:
+        if win32gui.GetWindowText(win32gui.GetForegroundWindow()) != "崩坏：星穹铁道":
+            print("截图失败....可能是游戏在后台，请手动切换一下...")
+            return False
+        left, top, width, height = window.left, window.top, window.width, window.height
+        return pyautogui.screenshot(region=(left, top, width, height)).resize((1920, 1080))
+    else:
+        print("请打开游戏...")
+        return False
 
 
 @dataclass
@@ -21,10 +56,20 @@ class pox_result:
 
 
 def get_real_pox(pox: pox_result):
-    return pox
-    # dev = 1920, 1080
-    # this_dev = pyautogui.size().width, pyautogui.size().height
-    # return pox_result(pox.x / dev[0] * this_dev[0], pox.y / dev[1] * this_dev[1], pox.val)
+    # return pox
+    dev =  1920,1080
+    this_dev = get_this_dev_size()
+    result = pox_result(pox.x / dev[0] * this_dev[0],
+                        pox.y / dev[1] * this_dev[1],
+                        pox.val)
+    print(f"原：{pox.x},{pox.y}目标：{result.x},{result.y}")
+    return result
+
+
+def split_pic(pic, pox1: Iterable, pox2: Iterable):
+    a, b = pox1
+    c, d = pox2
+    return pic[b:d, a:c]
 
 
 def mouse_click(self, x, y):
@@ -44,29 +89,27 @@ def pic_match(big_img, template):
     return pox_result(center_x, center_y, max_val)
 
 
-def screenshot():
-    window = gw.getWindowsWithTitle("崩坏：星穹铁道")[0]
-    if window and window.visible:
-        if win32gui.GetWindowText(win32gui.GetForegroundWindow()) != "崩坏：星穹铁道":
-            print("截图失败....可能是游戏在后台，请手动切换一下...")
-            return False
-        left, top, width, height = window.left, window.top, window.width, window.height
-        return pyautogui.screenshot(region=(left, top, width, height))
-    else:
-        print("请打开游戏...")
-        return False
-
-
 class control:
     @staticmethod
+    def print_mode(func):
+        def wrapper(*args, **kwargs):
+            print(f"Positional arguments: {args}")
+        return wrapper
+    @staticmethod
+    def click(x,y):
+        pyautogui.click(x,y)
+    @staticmethod
+    # @print_mode
     def mouse_down(x, y):
         pyautogui.mouseDown(x, y)
 
     @staticmethod
+    # @print_mode
     def mouse_up():
         pyautogui.mouseUp()
 
     @staticmethod
+    # @print_mode
     def mouse_move(x, y):
         pyautogui.moveTo(x, y)
 
@@ -81,12 +124,14 @@ class task(Enum):
     task6 = 0x06  # 新一轮开启失败恢复
 
 
+def pil_to_cv(img):
+    """PIL → OpenCV"""
+    return cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
+
+
 class photo_tool:
     @staticmethod
     def difference_blend(img1: Image, img2: Image):
-        def pil_to_cv(img):
-            """PIL → OpenCV"""
-            return cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
 
         if isinstance(img1, Image):
             img1 = pil_to_cv(img1)
@@ -134,10 +179,10 @@ class photo_tool:
 class do_task:
     @staticmethod
     def task0():
-        control.mouse_down(964, 916)
+        control.mouse_down(*get_real_pox(pox_result(964, 916, val=0.0)))
         control.mouse_up()
         time.sleep(5)
-        control.mouse_down(992, 905)
+        control.mouse_down(*get_real_pox(pox_result(992, 905, val=0.0)))
         control.mouse_up()
 
     @staticmethod
@@ -156,7 +201,7 @@ class do_task:
         y = point.y
         print("执行任务一中...")
         for i in all_point:
-            control.mouse_down(x, y)
+            control.mouse_down(*get_real_pox(pox_result(x, y, val=0.0)))
             control.mouse_move(*get_real_pox(pox_result(*i, val=0.0)))
             control.mouse_up()
 
@@ -182,8 +227,7 @@ class do_task:
         time.sleep(2)
         t = time.time()
         while t + 10 > time.time():
-            control.mouse_down(*get_real_pox(pox_result(912, 765, 0.0)))
-            control.mouse_up()
+            control.click(*get_real_pox(pox_result(912, 765, 0.0)))
         time.sleep(3)
 
     @staticmethod
@@ -208,78 +252,58 @@ def get_task(img: Image):
         task_num: task
         pox: pox_result
 
-    a, c = map(int, get_real_pox(pox_result(715, 1258, 0.0)))
-    b, d = map(int, get_real_pox(pox_result(834, 951, 0.0)))
-    t6 = pic_match(big_img=img[b:d, a:c], template=cv2.imread("img/start.png"))  # 可信度大约为7
+    t6 = pic_match(big_img=split_pic(img, (715, 834), (1258, 951)), template=cv2.imread("img/start.png"))  # 可信度大约为7
+    if debug_mod:
+        cv2.imwrite(f"debug/img_task6.jpg", split_pic(img, (715, 834), (1258, 951)))
     if t6.val > 0.65 and t6.val != 1.0:
         # print(111)
         return get_task_result(task.task6, t6)
 
-    a, c = map(int, get_real_pox(pox_result(1574, 1919, 0.0)))
-    b, d = map(int, get_real_pox(pox_result(0, 142, 0.0)))
-    t5 = pic_match(big_img=img[b:d, a:c], template=cv2.imread("img/exit0.png"))  # 可信度大约为7
+    t5 = pic_match(big_img=split_pic(img, (1574, 0), (1919, 142)), template=cv2.imread("img/exit0.png"))  # 可信度大约为7
+    if debug_mod:
+        cv2.imwrite(f"debug/img_task5.jpg", split_pic(img, (1574, 0), (1919, 142)))
     if t5.val > 0.7 and t5.val != 1.0:
         return get_task_result(task.task5, t5)
 
-    a, c = map(int, get_real_pox(pox_result(883, 1038, 0.0)))
-    b, d = map(int, get_real_pox(pox_result(235, 273, 0.0)))
-    t0 = pic_match(big_img=img[b:d, a:c], template=cv2.imread("img/0.png"))  # 可信度大约为7
+    t0 = pic_match(big_img=split_pic(img, (883, 235), (1038, 273)), template=cv2.imread("img/0.png"))  # 可信度大约为7
+    if debug_mod:
+        cv2.imwrite(f"debug/img_task0.jpg", split_pic(img, (883, 235), (1038, 300)))
+        print(f"当前可信度task0可信度{t0.val}")
     if t0.val > 0.6 and t0.val != 1.0:
         return get_task_result(task.task0, t0)
 
     t = pic_match(big_img=img, template=cv2.imread("img/a.png"))  # 可信度大约为7
     if t.val > 0.5 and t.val != 1.0:
         return get_task_result(task.task1, t)
-    a, c = get_real_pox(pox_result(700, 850, 0.0))
-    b, d = get_real_pox(pox_result(700, 850, 0.0))
-    a, b, c, d = map(int, [a, b, c, d])
-    t2 = pic_match(big_img=img[b:d, a:c], template=cv2.imread("img/b.png"))  # 可信度大约为8
-    # print("task2", t2)
+
+    t2 = pic_match(big_img=split_pic(img, (700, 700), (850, 850)), template=cv2.imread("img/b.png"))  # 可信度大约为8
+    if debug_mod:
+        cv2.imwrite(f"debug/img_task2.jpg", split_pic(img, (700, 700), (850, 850)))
     if t2.val > 0.5 and t2.val != 1.0:
         return get_task_result(task.task2, t2)
 
-    # all_point = [[1505, 786, 1630, 910], [1244, 388, 1398, 521],
-    #              [632, 667, 755, 774], [1347, 662, 1554, 820],
-    #              [78, 496, 258, 642], [536, 251, 699, 394], [301, 539, 462, 630]
-    #     , ]
-    #
-    # for i in all_point:
-    #     a, c = map(int, get_real_pox(pox_result(i[0], i[2], 0.0)))
-    #     b, d = map(int, get_real_pox(pox_result(i[1], i[3], 0.0)))
-    #     cv2.imwrite(f"test/{i[0]}.jpg",img[b:d, a:c])
-    #     for j in range(4):
-    #         t3 = pic_match(big_img=img[b:d, a:c], template=cv2.imread(f"img/c{j + 1}.png"))
-    #
-    #         print(t3.x, t3.y, t3.val)
-    #         if t3.val > 0.7 and t3.val != 1.0 and t3.val != 0.0:
-    #             print(f"成功识别到pic{j + 1},位于{t3.x},{t3.y}")
-    #             return get_task_result(task.task3, t3)
-
-    a, c = map(int, get_real_pox(pox_result(1245, 1412, 0.0)))
-    b, d = map(int, get_real_pox(pox_result(867, 990, 0.0)))
-    # cv2.imwrite("1.png", img[b:d, a:c])
-    t4 = pic_match(big_img=img[b:d, a:c], template=cv2.imread("img/d.png"))  # 可信度大约为8
-    # print("task2", t2)
+    t4 = pic_match(big_img=split_pic(img, (1245, 867), (1412, 990)), template=cv2.imread("img/d.png"))  # 可信度大约为8
+    if debug_mod:
+        cv2.imwrite(f"debug/img_task4.jpg", split_pic(img, (1245, 867), (1412, 990)))
     if t4.val < 0.5 and t4.val != 1.0 and t4.val != 0.0:
         return get_task_result(task.task4, t4)
 
 
 pyautogui.failSafeCheck()
 if __name__ == '__main__':
-    print(f"当前分辨率{pyautogui.size()}")
+    print(f"分辨率{get_this_dev_size()}")
     try:
         while True:
             time.sleep(2)
-            # print("任务开始")
             pic = screenshot()
             if not pic:
                 continue
-            # print("识别中...")
             t = get_task(cv2.cvtColor(np.array(pic), cv2.COLOR_RGB2BGR))
             if t is None:
                 print("未识别到任务...")
                 continue
             print(f"识别到任务{t.task_num.name}")
+            # print(f"DEBUG:识别到的位置：{(t.pox)}")
             match t.task_num:
                 case task.task1:
                     do_task.task1(t.pox)
@@ -301,4 +325,4 @@ if __name__ == '__main__':
         print(f"发生异常：{e}")
         with open("error.log", "w") as a:
             a.write(traceback.format_exc())
-        exit(1)
+        raise e
