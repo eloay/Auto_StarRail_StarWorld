@@ -290,9 +290,9 @@ class do_task:
             time.sleep(2)
 
         if not disable_diamonds:
-            while True: # 使用钻石抽卡
+            while True: # 使用钻石抽卡或单次抽卡
                 img = np.array(screenshot())
-                t7 = pic_match(big_img=split_pic(img, (1268, 801), (1268+239, 801+39)), template=cv2.imread("img/c7_5.png"))
+                t7 = pic_match(big_img=split_pic(img, (1387, 801), (1387+119, 801+36)), template=cv2.imread("img/c7_5.png"))
                 if t7.val > 0.8 and t7.val != 1.0:
                     control.mouse_down(*get_real_pox(pox_result(1386, 819, 0.0)))
                     control.mouse_up()
@@ -469,7 +469,7 @@ if __name__ == '__main__':
                 case task.task3:
                     do_task.task3(t.pox)
                 case task.task7:
-                    do_task.task7()
+                    do_task.task7(disable_glod=args.disable_glod, disable_diamonds=args.disable_use_diamonds)
     except BaseException as e:
         import traceback
 
