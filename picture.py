@@ -1,9 +1,11 @@
+from typing import Iterable
+
 import cv2
 import pyautogui
 import pygetwindow as gw
 import win32gui
-from typing import Iterable
 
+import control
 from control import Pox
 
 
@@ -23,15 +25,16 @@ def split_pic(pic, pox1: Iterable, pox2: Iterable):
 
 
 def screenshot():
-    window = gw.getWindowsWithTitle("崩坏：星穹铁道")[0]
-    if window and window.visible:
-        if win32gui.GetWindowText(win32gui.GetForegroundWindow()) != "崩坏：星穹铁道":
-            print("截图失败....可能是游戏在后台，请手动切换一下...")
-            return False
-        left, top, width, height = window.left, window.top, window.width, window.height
-        return pyautogui.screenshot(region=(left, top, width, height)).resize((1920, 1080))
+    if not control.CloudGameClient:
+        window = gw.getWindowsWithTitle("崩坏：星穹铁道")[0]
+        if window and window.visible:
+            if win32gui.GetWindowText(win32gui.GetForegroundWindow()) != "崩坏：星穹铁道":
+                print("截图失败....可能是游戏在后台，请手动切换一下...")
+                return False
+            left, top, width, height = window.left, window.top, window.width, window.height
+            return pyautogui.screenshot(region=(left, top, width, height)).resize((1920, 1080))
+        else:
+            print("请打开游戏...")
+            return None
     else:
-        print("请打开游戏...")
-        return False
-
-
+        return control.CloudGameClient.screenshot()

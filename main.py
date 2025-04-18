@@ -1,16 +1,20 @@
 import time
+
 import cv2
 import numpy as np
 import pyautogui
-import tasks
-
 from PIL.Image import Image
+
+import control
+import tasks
 from control import get_this_dev_size
 from picture import split_pic, pic_match, screenshot
 from tasks import Task
+from ucClient import ucClient
 
 task7_timer = 3600  # 任务7的定时器，默认3600秒（1小时）
 task7_lastRun = -1  # 任务7的上次运行时间
+
 
 def get_task(img: Image, debug_mode=False) -> tuple:
     global task7_lastRun  # 任务7的定时器
@@ -72,15 +76,23 @@ if __name__ == '__main__':
     parser.add_argument('--timer-seconds', type=int, default=3600, help='定时器时间')
     parser.add_argument('--disable-glod', action='store_true', help='禁止自动抽取贵金邀约')
     parser.add_argument('--disable-use-diamonds', action='store_true', help='禁止使用钻石抽取')
+    parser.add_argument('--cloudgame', action='store_true', help='使用云游戏')
     args = parser.parse_args()
 
-    print(f"分辨率{get_this_dev_size()}")
-
-    # threading.Thread(target=timer, args=(args.timer_seconds,), daemon=True).start()  # 启动定时器
-    # 为什么计时器都要开个线程啊？
-    task7_lastRun = time.time()
-
     try:
+        if args.cloudgame:
+            print("云游戏模式: 正在启动云游戏......")
+            print("云游戏模式: 请确保Chrome 135 已安装且被添加至系统PATH中，并添加cookie至cookie.json中")
+            control.CloudGameClient = ucClient()
+            print("云游戏模式: 已自动启动云游戏,请在云游戏中打开星铁World。")
+            input("请在云游戏中打开星铁World,按Enter继续...")
+
+        print(f"分辨率: {get_this_dev_size()}")
+
+        # threading.Thread(target=timer, args=(args.timer_seconds,), daemon=True).start()  # 启动定时器
+        # 为什么计时器都要开个线程啊？
+        task7_lastRun = time.time()
+
         while True:
             # 主循环
             time.sleep(2)
@@ -119,7 +131,6 @@ if __name__ == '__main__':
                     tasks.task6()
                 case Task.task7:
                     tasks.task7(disable_glod=args.disable_glod, disable_diamonds=args.disable_use_diamonds)
-
     except BaseException as e:
         import traceback
 
