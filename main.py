@@ -243,9 +243,21 @@ class do_task:
         control.mouse_up()
 
     @staticmethod
-    def task3(point: pox_result):
-        control.mouse_down(*get_real_pox(pox_result(point.x, point.y, 0.0)))
-        control.mouse_up()
+    def task3():
+        all_points = [
+            [1307, 458],
+            [1268, 417],
+            [611, 343],
+            [693, 745],
+            [159, 596],
+            [1561, 874],
+            [377, 592],
+            [1418, 732]
+        ]
+        for point in all_points:
+            control.mouse_down(*get_real_pox(pox_result(point[0], point[1], 0.0)))
+            control.mouse_up()
+            time.sleep(0.1)
 
     @staticmethod
     def task7(disable_glod=False, disable_diamonds=False): # 抽卡&角色升级
@@ -415,6 +427,10 @@ def get_task(img: Image, timer_seconds=3600, debug_mod=False) -> task:
     if t4.val < 0.5 and t4.val != 1.0 and t4.val != 0.0:
         return get_task_result(task.task4, t4)
 
+    # 如果上面的都没有匹配到，20%的概率匹配到任务3
+    if random.random() <= 0.2:
+        return get_task_result(task.task3, None)
+
 def timer(seconds): # 定时器，用于定时任务7
     global task7_timer
     task7_timer = seconds # 初始化定时器
@@ -466,10 +482,10 @@ if __name__ == '__main__':
                     do_task.task5()
                 case task.task6:
                     do_task.task6()
-                case task.task3:
-                    do_task.task3(t.pox)
                 case task.task7:
                     do_task.task7(disable_glod=args.disable_glod, disable_diamonds=args.disable_use_diamonds)
+                case task.task3:
+                    do_task.task3()
     except BaseException as e:
         import traceback
 
