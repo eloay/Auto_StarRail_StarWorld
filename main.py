@@ -10,12 +10,7 @@ from picture import split_pic, pic_match, screenshot
 from tasks import Task
 
 task7_timer = 3600  # 任务7的定时器，默认3600秒（1小时）
-task7_lastRun = -1
-
-
-def resize_to_standard(img, standard_width=1920, standard_height=1080):
-    return cv2.resize(img, (standard_width, standard_height), interpolation=cv2.INTER_AREA)
-
+task7_lastRun = -1  # 任务7的上次运行时间
 
 def get_task(img: Image, debug_mode=False) -> tuple:
     global task7_lastRun  # 任务7的定时器
