@@ -4,3 +4,4 @@ PyAutoGUI~=0.9.54
 PyGetWindow~=0.0.9
 pillow~=10.4.0
 pynput~=1.8.1
+pywin32
