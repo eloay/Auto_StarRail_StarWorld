@@ -10,8 +10,11 @@ import numpy as np
 import pyautogui
 import time
 import pygetwindow as gw
+import random
+import threading
 
 debug_mod = False
+task7_timer = 3600  # 每1小时执行一次task7
 
 
 def resize_to_standard(img, standard_width=1920, standard_height=1080):
@@ -122,6 +125,7 @@ class task(Enum):
     task4 = 0x04  # 薅鸟毛
     task5 = 0x05  # 误触管理恢复
     task6 = 0x06  # 新一轮开启失败恢复
+    task7 = 0x07  # 抽卡&角色升级
 
 
 def pil_to_cv(img):
@@ -245,12 +249,119 @@ class do_task:
         control.mouse_down(*get_real_pox(pox_result(point.x, point.y, 0.0)))
         control.mouse_up()
 
+    @staticmethod
+    def task7(): # 抽卡&角色升级
+        control.mouse_down(*get_real_pox(pox_result(1663, 948, 0.0))) # 打开抽卡页面
+        control.mouse_up()
+        time.sleep(2)
+
+        while True: # 抽炫彩
+            img = np.array(screenshot())
+            t7 = pic_match(big_img=split_pic(img, (1277, 739), (1277+224, 739+35)), template=cv2.imread("img/c7.png"))
+            if t7.val > 0.8 and t7.val != 1.0:
+                control.mouse_down(*get_real_pox(pox_result(1386, 819, 0.0)))
+                control.mouse_up()
+                time.sleep(2)
+                control.mouse_down(*get_real_pox(pox_result(1809, 65, 0.0)))
+                control.mouse_up()
+                time.sleep(4)
+                control.mouse_down(*get_real_pox(pox_result(1809, 65, 0.0)))
+                control.mouse_up()
+                time.sleep(2)
+            else:
+                break
+
+        time.sleep(2)
+
+        while True: # 抽贵金
+            img = np.array(screenshot())
+            t7 = pic_match(big_img=split_pic(img, (872, 742), (869+210, 742+32)), template=cv2.imread("img/c7_4.png"))
+            if t7.val > 0.8 and t7.val != 1.0:
+                control.mouse_down(*get_real_pox(pox_result(983, 819, 0.0)))
+                control.mouse_up()
+                time.sleep(2)
+                control.mouse_down(*get_real_pox(pox_result(1809, 65, 0.0)))
+                control.mouse_up()
+                time.sleep(4)
+                control.mouse_down(*get_real_pox(pox_result(1809, 65, 0.0)))
+                control.mouse_up()
+                time.sleep(2)
+            else:
+                break
+
+        time.sleep(2)
+
+        while True: # 避免抽卡无法退出
+            img = np.array(screenshot())
+            t7 = pic_match(big_img=split_pic(img, (99, 64), (99+58, 64+33)), template=cv2.imread("img/c7_3.png"))
+            if t7.val > 0.7 and t7.val != 1.0:
+                control.mouse_down(*get_real_pox(pox_result(1860, 66, 0.0)))
+                control.mouse_up()
+                time.sleep(0.5)
+            else:
+                break
+
+        time.sleep(2)
+        control.mouse_down(*get_real_pox(pox_result(1849, 803, 0.0))) # 一键收取
+        control.mouse_up()
+        time.sleep(1)
+        control.mouse_down(*get_real_pox(pox_result(1796, 940, 0.0))) # 会场管理
+        control.mouse_up()
+        time.sleep(1)
+
+        def upgrade(): # 升级角色
+            img = np.array(screenshot())
+            t7 = pic_match(big_img=split_pic(img, (1347, 856), (1347+314, 856+46)), template=cv2.imread("img/c7_2.png"))
+            if t7.val > 0.6 and t7.val != 1.0:
+                control.mouse_down(*get_real_pox(pox_result(1502, 876, 0.0)))
+                control.mouse_up()
+                return True
+            else:
+                return False
+
+        all_points = [
+            [512, 659],
+            [695, 544],
+            [440, 444],
+            [821, 239],
+            [1108, 258],
+            [1380, 331],
+            [1467, 606],
+            [1220, 637],
+            [1011, 747]
+        ]
+        while True: # 循环升级角色直到没有升级
+            for point in random.sample(all_points, len(all_points)): # 随机打乱升级顺序
+                control.mouse_down(*get_real_pox(pox_result(point[0], point[1], 0.0)))
+                control.mouse_up()
+                time.sleep(0.2)
+                if not upgrade():
+                    break
+            break
+
+        time.sleep(2)
+        
+        while True: # 避免无法退出升级页面
+            img = np.array(screenshot())
+            t7 = pic_match(big_img=split_pic(img, (1574, 0), (1919, 142)), template=cv2.imread("img/exit0.png"))
+            if t7.val > 0.7 and t7.val != 1.0:
+                control.mouse_down(*get_real_pox(pox_result(1760, 86, 0.0)))
+                control.mouse_up()
+                time.sleep(0.5)
+            else:
+                break
+
 
 def get_task(img: Image):
+    global task7_timer # 任务7的定时器
     @dataclass
     class get_task_result:
         task_num: task
         pox: pox_result
+
+    if task7_timer < 0:
+        task7_timer = 3600 # 重置定时器
+        return get_task_result(task.task7, None)
 
     t6 = pic_match(big_img=split_pic(img, (715, 834), (1258, 951)), template=cv2.imread("img/start.png"))  # 可信度大约为7
     if debug_mod:
@@ -288,10 +399,19 @@ def get_task(img: Image):
     if t4.val < 0.5 and t4.val != 1.0 and t4.val != 0.0:
         return get_task_result(task.task4, t4)
 
+def timer(): # 定时器，用于定时任务7
+    global task7_timer
+    while True:
+        time.sleep(1)
+        task7_timer -= 1
+
 
 pyautogui.failSafeCheck()
 if __name__ == '__main__':
     print(f"分辨率{get_this_dev_size()}")
+
+    threading.Thread(target=timer, daemon=True).start() # 启动定时器
+
     try:
         while True:
             time.sleep(2)
@@ -319,6 +439,8 @@ if __name__ == '__main__':
                     do_task.task6()
                 case task.task3:
                     do_task.task3(t.pox)
+                case task.task7:
+                    do_task.task7()
     except BaseException as e:
         import traceback
 
