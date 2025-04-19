@@ -5,9 +5,9 @@ from enum import Enum
 import cv2
 import numpy as np
 
-from control import Pox, get_real_pox
-from picture import screenshot
 import control
+from control import Pox, get_real_pox
+from picture import screenshot, pic_match, split_pic
 
 
 def task0():  # 结算
@@ -29,7 +29,7 @@ def task1(point: Pox):  # 帕姆快送
 
     print("正在收集帕姆快送中...")
     for i in all_point:
-        control.drag(point.x, point.y, *i)
+        control.drag(*get_real_pox(point), *get_real_pox(Pox(i[0], i[1],0.0)))
 
 
 def task2():  # 来宾事件
@@ -151,7 +151,7 @@ def task7(disable_glod=False, disable_diamonds=False):  # 抽卡&角色升级
 def gacha(poll_x: int):  # 抽卡
     control.left_click(*get_real_pox(Pox(poll_x, 819, 0.0)))
     time.sleep(2)
-    control.left_click(*get_real_pox(Pox(1809,65, 0.0)))
+    control.left_click(*get_real_pox(Pox(1809, 65, 0.0)))
     time.sleep(3)
     control.left_click(*get_real_pox(Pox(1809, 65, 0.0)))
     time.sleep(2)
