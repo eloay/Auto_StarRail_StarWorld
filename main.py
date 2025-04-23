@@ -74,6 +74,8 @@ def get_task(img: Image, debug_mode=False) -> tuple:
 
 pyautogui.failSafeCheck()
 if __name__ == '__main__':
+    from multiprocessing import freeze_support
+    freeze_support()
     import argparse
 
     parser = argparse.ArgumentParser(description='Auto StarWorld')
@@ -83,7 +85,8 @@ if __name__ == '__main__':
     parser.add_argument('--disable-common', action='store_true', help='禁止自动抽取标准邀约')
     parser.add_argument('--disable-use-diamonds', action='store_true', help='禁止使用钻石抽取')
     parser.add_argument('--cloudgame', action='store_true', help='使用云游戏')
-    args = parser.parse_args()
+    # args = parser.parse_args()
+    args, _ = parser.parse_known_args()
 
     try:
         if args.cloudgame:
