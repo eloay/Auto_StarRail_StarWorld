@@ -3,6 +3,7 @@ import time
 import cv2
 import numpy as np
 import pyautogui
+import random
 from PIL.Image import Image
 
 import control
@@ -66,6 +67,10 @@ def get_task(img: Image, debug_mode=False) -> tuple:
     if t4.val < 0.5 and t4.val != 1.0 and t4.val != 0.0:
         return Task.task4, t4
 
+    # 如果上面的都没有匹配到，20%的概率匹配到特殊来宾
+    if random.random() <= 0.2:
+        return Task.task3, None
+
 
 pyautogui.failSafeCheck()
 if __name__ == '__main__':
@@ -75,6 +80,7 @@ if __name__ == '__main__':
     parser.add_argument('--debug', action='store_true', help='debug模式')
     parser.add_argument('--timer-seconds', type=int, default=3600, help='定时器时间')
     parser.add_argument('--disable-glod', action='store_true', help='禁止自动抽取贵金邀约')
+    parser.add_argument('--disable-common', action='store_true', help='禁止自动抽取标准邀约')
     parser.add_argument('--disable-use-diamonds', action='store_true', help='禁止使用钻石抽取')
     parser.add_argument('--cloudgame', action='store_true', help='使用云游戏')
     args = parser.parse_args()
@@ -89,8 +95,7 @@ if __name__ == '__main__':
 
         print(f"分辨率: {get_this_dev_size()}")
 
-        # threading.Thread(target=timer, args=(args.timer_seconds,), daemon=True).start()  # 启动定时器
-        # 为什么计时器都要开个线程啊？
+        task7_timer = args.timer_seconds  # 设置定时器时间
         task7_lastRun = time.time()
 
         while True:
@@ -122,7 +127,7 @@ if __name__ == '__main__':
                 case Task.task2:
                     tasks.task2()
                 case Task.task3:
-                    tasks.task3(task[1])
+                    tasks.task3()
                 case Task.task4:
                     tasks.task4()
                 case Task.task5:
@@ -130,7 +135,11 @@ if __name__ == '__main__':
                 case Task.task6:
                     tasks.task6()
                 case Task.task7:
-                    tasks.task7(disable_glod=args.disable_glod, disable_diamonds=args.disable_use_diamonds)
+                    tasks.task7(
+                        disable_common=args.disable_common,
+                        disable_glod=args.disable_glod,
+                        disable_diamonds=args.disable_use_diamonds
+                    )
     except BaseException as e:
         import traceback
 

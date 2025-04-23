@@ -36,7 +36,7 @@ def task2():  # 来宾事件
     control.left_click(*get_real_pox(Pox(796, 742, 0.0)))
     time.sleep(3)
     control.left_click(*get_real_pox(Pox(1638, 830, 0.0)))
-    time.sleep(3)
+    time.sleep(1)
     control.left_click(*get_real_pox(Pox(1616, 965, 0.0)))
     time.sleep(7)
     control.left_click(*get_real_pox(Pox(1749, 961, 0.0)))
@@ -60,11 +60,23 @@ def task6():  # 新一轮开启失败恢复
     control.left_click(*get_real_pox(Pox(991, 902, 0.0)))
 
 
-def task3(point: Pox):
-    control.left_click(*get_real_pox(Pox(point.x, point.y, 0.0)))
+def task3():
+    all_points = [
+        [1307, 458],
+        [1268, 417],
+        [611, 343],
+        [693, 745],
+        [159, 596],
+        [1561, 874],
+        [377, 592],
+        [1418, 732]
+    ]
+    for point in all_points:
+        control.left_click(*get_real_pox(Pox(point[0], point[1], 0.0)))
+        time.sleep(0.1)
 
 
-def task7(disable_glod=False, disable_diamonds=False):  # 抽卡&角色升级
+def task7(disable_common=False, disable_glod=False, disable_diamonds=False):  # 抽卡&角色升级
     # 打开抽卡页面
     control.left_click(*get_real_pox(Pox(1663, 948, 0.0)))
     time.sleep(2)
@@ -87,6 +99,17 @@ def task7(disable_glod=False, disable_diamonds=False):  # 抽卡&角色升级
                            template=cv2.imread("img/c7_4.png"))
             if t7.val > 0.8 and t7.val != 1.0:
                 gacha(983)
+            else:
+                break
+        time.sleep(2)
+
+    if not disable_common:
+        while True: # 抽标准
+            img = np.array(screenshot())
+            t7 = pic_match(big_img=split_pic(img, (468, 743), (468 + 208, 743 + 33)),
+                           template=cv2.imread("img/c7_6.png"))
+            if t7.val > 0.8 and t7.val != 1.0:
+                gacha(572)
             else:
                 break
         time.sleep(2)
@@ -152,7 +175,7 @@ def gacha(poll_x: int):  # 抽卡
     control.left_click(*get_real_pox(Pox(poll_x, 819, 0.0)))
     time.sleep(2)
     control.left_click(*get_real_pox(Pox(1809, 65, 0.0)))
-    time.sleep(3)
+    time.sleep(4)
     control.left_click(*get_real_pox(Pox(1809, 65, 0.0)))
     time.sleep(2)
 
