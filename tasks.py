@@ -76,63 +76,63 @@ def task3():
         time.sleep(0.1)
 
 
-def task7(disable_common=False, disable_glod=False, disable_diamonds=False):  # 抽卡&角色升级
-    # 打开抽卡页面
-    control.left_click(*get_real_pox(Pox(1663, 948, 0.0)))
-    time.sleep(2)
+def task7(disable_common=False, disable_gold=False, disable_diamonds=False, disable_color=False):  # 抽卡&角色升级
+    if disable_color or disable_gold or disable_common:
+        # 打开抽卡页面
+        control.left_click(*get_real_pox(Pox(1663, 948, 0.0)))
+        time.sleep(2)
+        if not disable_color:
+            while True:  # 抽炫彩
+                img = np.array(screenshot())
+                t7 = pic_match(big_img=split_pic(img, (1277, 739), (1277 + 224, 739 + 35)),
+                               template=cv2.imread("img/c7.png"))
+                if t7.val > 0.8 and t7.val != 1.0:
+                    gacha(1386)
+                else:
+                    break
+            time.sleep(2)
 
-    while True:  # 抽炫彩
-        img = np.array(screenshot())
-        t7 = pic_match(big_img=split_pic(img, (1277, 739), (1277 + 224, 739 + 35)),
-                       template=cv2.imread("img/c7.png"))
-        if t7.val > 0.8 and t7.val != 1.0:
-            gacha(1386)
-        else:
-            break
+        if not disable_gold:
+            while True:  # 抽贵金
+                img = np.array(screenshot())
+                t7 = pic_match(big_img=split_pic(img, (872, 742), (869 + 210, 742 + 32)),
+                               template=cv2.imread("img/c7_4.png"))
+                if t7.val > 0.8 and t7.val != 1.0:
+                    gacha(983)
+                else:
+                    break
+            time.sleep(2)
 
-    time.sleep(2)
+        if not disable_common:
+            while True: # 抽标准
+                img = np.array(screenshot())
+                t7 = pic_match(big_img=split_pic(img, (468, 743), (468 + 208, 743 + 33)),
+                               template=cv2.imread("img/c7_6.png"))
+                if t7.val > 0.8 and t7.val != 1.0:
+                    gacha(572)
+                else:
+                    break
+            time.sleep(2)
 
-    if not disable_glod:
-        while True:  # 抽贵金
+        if not disable_diamonds:
+            while True:  # 使用钻石抽卡或单次抽卡
+                img = np.array(screenshot())
+                t7 = pic_match(big_img=split_pic(img, (1387, 801), (1387 + 119, 801 + 36)),
+                               template=cv2.imread("img/c7_5.png"))
+                if t7.val > 0.8 and t7.val != 1.0:
+                    gacha(1386)
+                else:
+                    break
+            time.sleep(2)
+
+        while True:  # 避免抽卡无法退出
             img = np.array(screenshot())
-            t7 = pic_match(big_img=split_pic(img, (872, 742), (869 + 210, 742 + 32)),
-                           template=cv2.imread("img/c7_4.png"))
-            if t7.val > 0.8 and t7.val != 1.0:
-                gacha(983)
+            t7 = pic_match(big_img=split_pic(img, (99, 64), (99 + 58, 64 + 33)), template=cv2.imread("img/c7_3.png"))
+            if t7.val > 0.7 and t7.val != 1.0:
+                control.left_click(*get_real_pox(Pox(1860, 66, 0.0)))
+                time.sleep(0.5)
             else:
                 break
-        time.sleep(2)
-
-    if not disable_common:
-        while True: # 抽标准
-            img = np.array(screenshot())
-            t7 = pic_match(big_img=split_pic(img, (468, 743), (468 + 208, 743 + 33)),
-                           template=cv2.imread("img/c7_6.png"))
-            if t7.val > 0.8 and t7.val != 1.0:
-                gacha(572)
-            else:
-                break
-        time.sleep(2)
-
-    if not disable_diamonds:
-        while True:  # 使用钻石抽卡或单次抽卡
-            img = np.array(screenshot())
-            t7 = pic_match(big_img=split_pic(img, (1387, 801), (1387 + 119, 801 + 36)),
-                           template=cv2.imread("img/c7_5.png"))
-            if t7.val > 0.8 and t7.val != 1.0:
-                gacha(1386)
-            else:
-                break
-        time.sleep(2)
-
-    while True:  # 避免抽卡无法退出
-        img = np.array(screenshot())
-        t7 = pic_match(big_img=split_pic(img, (99, 64), (99 + 58, 64 + 33)), template=cv2.imread("img/c7_3.png"))
-        if t7.val > 0.7 and t7.val != 1.0:
-            control.left_click(*get_real_pox(Pox(1860, 66, 0.0)))
-            time.sleep(0.5)
-        else:
-            break
 
     time.sleep(2)
     control.left_click(*get_real_pox(Pox(1849, 803, 0.0)))  # 一键收取

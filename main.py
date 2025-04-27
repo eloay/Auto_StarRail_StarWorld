@@ -81,10 +81,11 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Auto StarWorld')
     parser.add_argument('--debug', action='store_true', help='debug模式')
     parser.add_argument('--timer-seconds', type=int, default=3600, help='定时器时间')
-    parser.add_argument('--disable-glod', action='store_true', help='禁止自动抽取贵金邀约')
+    parser.add_argument('--disable-gold', action='store_true', help='禁止自动抽取贵金邀约')
     parser.add_argument('--disable-common', action='store_true', help='禁止自动抽取标准邀约')
     parser.add_argument('--disable-use-diamonds', action='store_true', help='禁止使用钻石抽取')
     parser.add_argument('--cloudgame', action='store_true', help='使用云游戏')
+    parser.add_argument('--disable-color', action='store_true', help='禁止自动抽取炫彩邀约')
     # args = parser.parse_args()
     args, _ = parser.parse_known_args()
 
@@ -139,8 +140,9 @@ if __name__ == '__main__':
                     tasks.task6()
                 case Task.task7:
                     tasks.task7(
+                        disable_color=args.disable_color,
                         disable_common=args.disable_common,
-                        disable_glod=args.disable_glod,
+                        disable_gold=args.disable_gold,
                         disable_diamonds=args.disable_use_diamonds
                     )
     except BaseException as e:
