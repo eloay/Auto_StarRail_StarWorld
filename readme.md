@@ -37,6 +37,7 @@ options:
                         定时器时间，默认3600秒（1小时）
   --disable-glod        禁止自动抽取贵金邀约
   --disable-common      禁止自动抽取标准邀约
+  --disable-color       禁止自动抽取标准邀约
   --disable-use-diamonds
                         禁止使用钻石抽取
   --cloudgame           使用云游戏
